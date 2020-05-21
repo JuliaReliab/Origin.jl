@@ -1,5 +1,5 @@
 module Origin
 
-greet() = print("Hello World!")
+include("_origin.jl")
 
 end # module
