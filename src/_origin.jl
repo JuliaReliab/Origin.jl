@@ -51,10 +51,12 @@ function _replace(expr::Expr, symlist, stack)
     if Meta.isexpr(expr, :ref)
         push!(stack, expr.args[1])
         args = Any[_replace(x, symlist, stack) for x = expr.args]
-        m = get(symlist, peek(stack), 1)
-        u = Expr(:call, :-, 1, m)
-        for i = 2:length(args)
-            args[i] = _changeindex(args[i], u)
+        if haskey(symlist, peek(stack))
+            m = symlist[peek(stack)]
+            u = Expr(:call, :-, 1, m)
+            for i = 2:length(args)
+                args[i] = _changeindex(args[i], u)
+            end
         end
         pop!(stack)
         Expr(expr.head, args...)
@@ -70,8 +72,8 @@ function _replace(expr::Expr, symlist, stack)
 end
 
 function _replace(expr::Symbol, symlist, stack)
-    if expr == :end
-        m = get(symlist, peek(stack), 1)
+    if expr == :end && haskey(symlist, peek(stack))
+        m = symlist[peek(stack)]
         Expr(:call, :-, :end, Expr(:call, :-, 1, m))
     else
         expr
