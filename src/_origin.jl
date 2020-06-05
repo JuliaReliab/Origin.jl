@@ -64,7 +64,9 @@ function _replace(expr::Expr, symlist, stack)
         macroexpand(Origin, expr, recursive=false)
     else
         if Meta.isexpr(expr, :call) && expr.args[1] == :eachindex
-            println("Warning: This macro has not been applied to the block including 'eachindex' yet.")
+            if _hassym(expr.args[2], symlist)
+                println("Warning: This macro has not been applied to the block including 'eachindex' yet.")
+            end
         end
         args = Any[_replace(x, symlist, stack) for x = expr.args]
         Expr(expr.head, args...)
@@ -82,6 +84,14 @@ end
 
 function _replace(expr::Any, symlist, stack)
     expr
+end
+
+function _hassym(expr::Expr, symlist)
+    any(Bool[_hassym(x, symlist) for x = expr.args])
+end
+
+function _hassym(expr::Symbol, symlist)
+    haskey(symlist, expr)
 end
 
 function _add!(symlist, x)

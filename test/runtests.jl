@@ -33,8 +33,22 @@ end
 @origin (a=>0, b=>2) function test()
     a = collect(0:10)
     for i = eachindex(a)
-        println(a[i])
+        a[i] = i
     end
 end
 @test_throws BoundsError test()
+end
+
+@testset "Test for eachindex2" begin
+@origin (b=>2) function test()
+    a = collect(0:10)
+    for i = eachindex(a)
+        a[i] = i
+    end
+    a
+end
+a = test()
+for i = eachindex(a)
+    @test a[i] == i
+end
 end
