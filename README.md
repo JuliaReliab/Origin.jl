@@ -79,6 +79,8 @@ In the case where `@origin` is nested, the outer `@origin` is ignored. Therefore
 end
 ```
 
+If we want to use the origin of outer macro, we should put the same origins to the inner macro.
+
 ```
 @origin (x=>0, y=>2) begin
     x = [0 for v = 1:3]
