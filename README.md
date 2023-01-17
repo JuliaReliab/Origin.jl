@@ -66,3 +66,27 @@ end
 
 In the case of matrix, the origins of x-axis and y-axis cannot be set independently. That is, if we set `x=>0` for the matrix, the origin of matrix becomes `x[0,0]`.
 
+In the case where `@origin` is nested, the outer `@origin` is ignored. Therefore, the following example causes an error at `y[4]=1` because only the inner `@origin` is applied.
+
+```
+@origin (x=>0, y=>2) begin
+    x = [0 for v = 1:3]
+    y = [0 for v = 1:3]
+    @origin (x=>10) begin
+        x[10] = 0
+        y[4] = 1 ## error! `y=>2` of the outer @origin is ignored.
+    end
+end
+```
+
+```
+@origin (x=>0, y=>2) begin
+    x = [0 for v = 1:3]
+    y = [0 for v = 1:3]
+    @origin (x=>10, y=>2) begin
+        ## if we want to use the origin of outer macro, we should put the same origins to the inner macro.
+        x[10] = 0
+        y[4] = 1
+    end
+end
+```
