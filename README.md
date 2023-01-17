@@ -63,3 +63,6 @@ Therefore the package is not applied to `eachindex` yet. The **error** occurs in
     println(x)
 end
 ```
+
+In the case of matrix, the origins of x-axis and y-axis cannot be set independently. That is, if we set `x=>0` for the matrix, the origin of matrix becomes `x[0,0]`.
+
