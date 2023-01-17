@@ -49,7 +49,7 @@ The following example uses two vector `x` and `y` whose origins are changed.
 end
 ```
 
-## Notice
+## Note
 
 This package is just to change the number which are bracket by `[]` so that it is adjust to the given origin.
 Therefore the package is not applied to `eachindex` yet. The **error** occurs in the following example:
@@ -68,7 +68,7 @@ In the case of matrix, the origins of x-axis and y-axis cannot be set independen
 
 In the case where `@origin` is nested, the outer `@origin` is ignored. Therefore, the following example causes an error at `y[4]=1` because only the inner `@origin` is applied.
 
-```
+```julia
 @origin (x=>0, y=>2) begin
     x = [0 for v = 1:3]
     y = [0 for v = 1:3]
@@ -81,7 +81,7 @@ end
 
 If we want to use the origin of outer macro, we should put the same origins to the inner macro.
 
-```
+```julia
 @origin (x=>0, y=>2) begin
     x = [0 for v = 1:3]
     y = [0 for v = 1:3]
