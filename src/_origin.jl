@@ -100,6 +100,29 @@ function _add!(symlist, x)
     end
 end
 
+"""
+    @origin vars expr
+
+A macro to change the origins of arrays listed by `vars` in `expr`.
+
+# Examples
+```julia
+@origin (x=>0, y=>2) begin
+    x = [0 for v = 1:3]
+    y = [0 for v = 1:3]
+    x[0] = 0 # the origin of x is 0
+    x[1] = 1
+    x[2] = 2
+    y[2] = 2 # the origin of y is 2
+    y[3] = 3
+    y[4] = 4
+    #    x[3] = 3 # error!
+    #    y[1] = 1 # error!
+    println(x) # [0, 1, 2]
+    println(y) # [2, 3, 4]
+end
+```
+"""
 macro origin(vars, expr)
     symlist = Dict{Symbol,Any}()
     stack = []
