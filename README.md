@@ -1,8 +1,7 @@
 # Origin.jl
 
-[![Build Status](https://travis-ci.com/okamumu/Origin.jl.svg?branch=master)](https://travis-ci.com/okamumu/Origin.jl)
-[![Codecov](https://codecov.io/gh/okamumu/Origin.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/okamumu/Origin.jl)
-[![Coveralls](https://coveralls.io/repos/github/okamumu/Origin.jl/badge.svg?branch=master)](https://coveralls.io/github/okamumu/Origin.jl?branch=master)
+[![CI](https://github.com/JuliaReliab/Origin.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaReliab/Origin.jl/actions/workflows/CI.yml)
+[![Codecov](https://codecov.io/gh/JuliaReliab/Origin.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaReliab/Origin.jl)
 
 `Origin.jl` provides a simple macro to use **non-1-based indexing (e.g., 0-origin or 2-origin)** for vectors and matrices inside a limited code block.
 
