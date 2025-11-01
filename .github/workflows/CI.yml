@@ -30,8 +30,6 @@ jobs:
           - windows-latest
         arch:
           - x64
-        exclude:
-          # Apple Silicon support will be added separately
         include:
           # Add macOS-14 (Apple Silicon) only for Julia 1.10+
           - os: macOS-14
