@@ -8,10 +8,10 @@
 #
 # Example:
 #
-# using Origin
+# using ZeroOrigin
 # using Test
 #
-# @testset "Origin.jl" begin
+# @testset "ZeroOrigin.jl" begin
 #     @origin (a=>0, b=>2) function test()
 #         a = collect(0:10)
 #         b = collect(1:5)
@@ -84,7 +84,7 @@ function _replace(expr::Expr, symlist, stack)
         pop!(stack)
         Expr(expr.head, args...)
     elseif Meta.isexpr(expr, :macrocall) && expr.args[1] == Symbol("@origin")
-        macroexpand(Origin, expr, recursive=false)
+        macroexpand(ZeroOrigin, expr, recursive=false)
     else
         if Meta.isexpr(expr, :call) && expr.args[1] == :eachindex
             if _hassym(expr.args[2], symlist)

@@ -1,9 +1,9 @@
-# Origin.jl
+# ZeroOrigin.jl
 
-[![CI](https://github.com/JuliaReliab/Origin.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaReliab/Origin.jl/actions/workflows/CI.yml)
-[![Codecov](https://codecov.io/gh/JuliaReliab/Origin.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaReliab/Origin.jl)
+[![CI](https://github.com/JuliaReliab/ZeroOrigin.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaReliab/ZeroOrigin.jl/actions/workflows/CI.yml)
+[![Codecov](https://codecov.io/gh/JuliaReliab/ZeroOrigin.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaReliab/ZeroOrigin.jl)
 
-`Origin.jl` provides a simple macro to use **non-1-based indexing (e.g., 0-origin or 2-origin)** for vectors and matrices inside a limited code block.
+`ZeroOrigin.jl` provides a simple macro to use **non-1-based indexing (e.g., 0-origin or 2-origin)** for vectors and matrices inside a limited code block.
 
 It statically rewrites index expressions such as `a[i]`, `a[m:n]`, and `a[m:s:n]` within a macro block, so you can access elements using the desired origin while keeping the actual underlying arrays 1-based.
 
@@ -13,7 +13,7 @@ It statically rewrites index expressions such as `a[i]`, `a[m:n]`, and `a[m:s:n]
 
 ```julia
 using Pkg
-Pkg.add(PackageSpec(url="https://github.com/JuliaReliab/Origin.jl.git"))
+Pkg.add(PackageSpec(url="https://github.com/JuliaReliab/ZeroOrigin.jl.git"))
 ```
 
 ---
@@ -21,7 +21,7 @@ Pkg.add(PackageSpec(url="https://github.com/JuliaReliab/Origin.jl.git"))
 ## Load module
 
 ```julia
-using Origin
+using ZeroOrigin
 ```
 
 ---
@@ -115,7 +115,7 @@ You can also combine both approaches: use `@origin` for local index shifts and `
 ## Example test set
 
 ```julia
-using Test, Origin
+using Test, ZeroOrigin
 
 @testset "Test for colon and end" begin
 @origin (a=>0, b=>2) begin

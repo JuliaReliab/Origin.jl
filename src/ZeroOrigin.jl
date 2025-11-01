@@ -1,4 +1,4 @@
-module Origin
+module ZeroOrigin
 
 include("_origin.jl")
 

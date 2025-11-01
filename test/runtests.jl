@@ -1,4 +1,4 @@
-using Origin
+using ZeroOrigin
 using Test
 
 @testset "Test for plain" begin
