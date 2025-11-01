@@ -1,6 +1,6 @@
 name = "ZeroOrigin"
 uuid = "421443cc-9b00-11ea-1646-3bac74f84b0c"
-authors = ["Hiroyuki Okamura" <okamu@hiroshima-u.ac.jp>]
+authors = ["Hiroyuki Okamura <okamu@hiroshima-u.ac.jp>"]
 version = "0.2.0"
 
 [compat]
