@@ -33,7 +33,14 @@ function peek(stack)
     return stack[end]
 end
 
+# change the index expr by adding u
 function _changeindex(expr, u)
+    # if it encounts all range :, return with nothing to change
+    if expr == :(:)
+        return expr
+    end
+
+    # if the inner of index is a colon expression
     if Meta.isexpr(expr, :call) && expr.args[1] == :(:)
         if length(expr.args) == 3
             Expr(:call, :(:), Expr(:call, :+, expr.args[2], u), Expr(:call, :+, expr.args[3], u))
@@ -41,6 +48,22 @@ function _changeindex(expr, u)
             Expr(:call, :(:), Expr(:call, :+, expr.args[2], u), expr.args[3], Expr(:call, :+, expr.args[4], u))
         else
             error("The inner of index should be a simple expr or call :(:)")
+        end
+    elseif Meta.isexpr(expr, :call) && expr.args[1] == :colon
+        if length(expr.args) == 3
+            Expr(:call, :colon, Expr(:call, :+, expr.args[2], u), Expr(:call, :+, expr.args[3], u))
+        elseif length(expr.args) == 4
+            Expr(:call, :colon, Expr(:call, :+, expr.args[2], u), expr.args[3], Expr(:call, :+, expr.args[4], u))
+        else
+            error("The inner of index should be a simple expr or call :colon")
+        end
+    elseif Meta.isexpr(expr, :colon)
+        if length(expr.args) == 2
+            Expr(:colon, Expr(:call, :+, expr.args[1], u), Expr(:call, :+, expr.args[2], u))
+        elseif length(expr.args) == 3
+            Expr(:colon, Expr(:call, :+, expr.args[1], u), expr.args[2], Expr(:call, :+, expr.args[3], u))
+        else
+            error("The inner of index should be a simple expr or call :colon")
         end
     else
         Expr(:call, :+, expr, u)
@@ -86,6 +109,7 @@ function _replace(expr::Any, symlist, stack)
     expr
 end
 
+# check whether expr includes any symbol in symlist
 function _hassym(expr::Expr, symlist)
     any(Bool[_hassym(x, symlist) for x = expr.args])
 end

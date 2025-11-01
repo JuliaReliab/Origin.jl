@@ -1,94 +1,140 @@
-# Origin
+# Origin.jl
 
 [![Build Status](https://travis-ci.com/okamumu/Origin.jl.svg?branch=master)](https://travis-ci.com/okamumu/Origin.jl)
 [![Codecov](https://codecov.io/gh/okamumu/Origin.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/okamumu/Origin.jl)
 [![Coveralls](https://coveralls.io/repos/github/okamumu/Origin.jl/badge.svg?branch=master)](https://coveralls.io/github/okamumu/Origin.jl?branch=master)
 
-Origin.jl provides a simple way to zero-origin vector and matrix with a Julia macro.
+`Origin.jl` provides a simple macro to use **non-1-based indexing (e.g., 0-origin or 2-origin)** for vectors and matrices inside a limited code block.
+
+It statically rewrites index expressions such as `a[i]`, `a[m:n]`, and `a[m:s:n]` within a macro block, so you can access elements using the desired origin while keeping the actual underlying arrays 1-based.
+
+---
 
 ## Installation
 
-This is not in the official package of Julia yet. Please run the following command to install it.
+```julia
+using Pkg
+Pkg.add(PackageSpec(url="https://github.com/JuliaReliab/Origin.jl.git"))
 ```
-using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaReliab/Origin.jl.git"))
-```
+
+---
 
 ## Load module
 
-The module is loaded:
-```
-using Orign
-```
-
-## How to use
-
-The package provides a macro `@origin` only. The arguments of `@origin` macro are 
 ```julia
-@macro {Tuple of :(=>)} {expr}
+using Origin
 ```
-The tuple lists variables whose indexes are changed. The origin of index is indicated by an argument of `:(=>)`. For example, `x => 0` means the origin of vector or matrix `x` is 0. The macro changes the indexes of listed variables in the tuple in the given block as the second argument.
 
-## Example
+---
 
-The following example uses two vector `x` and `y` whose origins are changed.
+## Basic usage
+
+The `@origin` macro changes index origins **only within the given block**:
 
 ```julia
-@origin (x=>0, y=>2) begin
-    x = [0 for v = 1:3]
-    y = [0 for v = 1:3]
-    x[0] = 0
-    x[1] = 1
-    x[2] = 2
-#    x[3] = 3 # error!
-#    y[1] = 1 # error!
-    y[2] = 2
-    y[3] = 3
-    y[4] = 4
-    println(x) ### [0, 1, 2]
-    println(y) ### [2, 3, 4]
+@origin (x => 0, y => 2) begin
+    x = [10, 11, 12]
+    y = [20, 21, 22, 23]
+    println(x[0])  # 10
+    println(x[2])  # 12
+    println(y[2])  # 20
+    println(y[5])  # 23
 end
 ```
 
-## Note
+The macro expands every array reference `x[...]` or `y[...]` by adding or subtracting offsets corresponding to the specified origins.
 
-This package is just to change the number which are bracket by `[]` so that it is adjust to the given origin.
-Therefore the package is not applied to `eachindex` yet. The **error** occurs in the following example:
+---
+
+## Supported syntax
+
+| Feature         | Example                                    | Notes                                 |
+| --------------- | ------------------------------------------ | ------------------------------------- |
+| Simple indexing | `x[0]`, `y[2]`                             | shifted by origin                     |
+| Colon range     | `x[0:3]`, `y[2:6]`                         | left/right bounds adjusted            |
+| Range with step | `x[0:2:10]`                                | step unchanged                        |
+| `end` keyword   | `x[2:end]`                                 | left bound shifted; `end` kept intact |
+| Nested macro    | allowed (inner definition overrides outer) |                                       |
+
+Example with `end`:
 
 ```julia
-@origin (x=>0) begin
-    x = [0 for v = 1:3]
-    for i = eachindex(x)
-        x[i] = i
+@origin (a=>0, b=>2) begin
+    a = collect(0:10)
+    b = collect(1:5)
+    @test a[0:end] == collect(0:10)
+    @test b[2:end] == [1, 2, 3, 4, 5]
+end
+```
+
+---
+
+## Handling of `eachindex`
+
+From version ≥ 0.3, `@origin` safely expands `eachindex` into **logical index ranges** consistent with the declared origins.
+
+| Pattern          | Transformed internally                                                    |
+| ---------------- | ------------------------------------------------------------------------- |
+| `eachindex(a)`   | `origin(a) : origin(a) + length(a) - 1`                                   |
+| `eachindex(a,b)` | common range of both logical axes (`max(lo_a, lo_b)` : `min(hi_a, hi_b)`) |
+
+Example:
+
+```julia
+@origin (a=>0, b=>2) begin
+    a = [0, 0, 0, 0]
+    b = [0, 0, 0, 0, 0]
+    for i in eachindex(a, b)
+        a[i] = i
+        b[i] = 10i
     end
-    println(x)
+    println(a)  # [0,1,2,3]
+    println(b)  # [20,30,40,50,60]
 end
 ```
 
-In the case of matrix, the origins of x-axis and y-axis cannot be set independently. That is, if we set `x=>0` for the matrix, the origin of matrix becomes `x[0,0]`.
+If `eachindex` is applied to arrays not listed in the macro argument, it is left unchanged and a warning is printed.
 
-In the case where `@origin` is nested, the outer `@origin` is ignored. Therefore, the following example causes an error at `y[4]=1` because only the inner `@origin` is applied.
+---
+
+## Notes and limitations
+
+* The macro rewrites only **literal index expressions** inside the block.
+  Dynamic indices computed in other functions are unaffected.
+* `end-1` or other arithmetic with `end` is not yet supported.
+* **⚠️ Multi-dimensional arrays**: When applied to matrices or higher-dimensional arrays, **all dimensions share the same origin**.
+  For example, `x=>0` gives `x[0,0]` as the logical top-left element (mapped to physical `x[1,1]`).
+  If you need different origins per dimension, use separate 1-D slices or consider [`OffsetArrays.jl`](https://github.com/JuliaArrays/OffsetArrays.jl).
+* Nested `@origin` blocks override outer definitions unless the same origins are re-declared explicitly.
+* The macro does **not** modify array axes; underlying arrays remain 1-based.
+
+If full offset indexing (including `axes`, `eachindex`, etc.) is desired across all code, consider using [`OffsetArrays.jl`](https://github.com/JuliaArrays/OffsetArrays.jl), which provides native support for non-1-based axes with almost no performance penalty.
+You can also combine both approaches: use `@origin` for local index shifts and `OffsetArrays` for global offset semantics.
+
+---
+
+## Example test set
 
 ```julia
-@origin (x=>0, y=>2) begin
-    x = [0 for v = 1:3]
-    y = [0 for v = 1:3]
-    @origin (x=>10) begin
-        x[10] = 0
-        y[4] = 1 ## error! `y=>2` of the outer @origin is ignored.
-    end
+using Test, Origin
+
+@testset "Test for colon and end" begin
+@origin (a=>0, b=>2) begin
+    a = collect(0:10)
+    b = collect(1:5)
+
+    @test a[0:5] == [0,1,2,3,4,5]
+    @test b[2:6] == [1,2,3,4,5]
+    @test a[0:2:end] == [0,2,4,6,8,10]
+    @test a[5:end] == collect(5:10)
+    @test b[4:end] == [3,4,5]
+end
 end
 ```
 
-If we want to use the origin of outer macro, we should put the same origins to the inner macro.
+---
 
-```julia
-@origin (x=>0, y=>2) begin
-    x = [0 for v = 1:3]
-    y = [0 for v = 1:3]
-    @origin (x=>10, y=>2) begin
-        ## if we want to use the origin of outer macro, we should put the same origins to the inner macro.
-        x[10] = 0
-        y[4] = 1
-    end
-end
-```
+## License
+
+MIT License © 2025 Hiroyuki Okamura / Hiroshima University Dependable Systems Lab
+
